@@ -25,10 +25,17 @@ class R2AGrupo8(IR2A):
         IR2A.__init__(self, id)
         self.parsed_mpd = ''
         self.qi = []
+        self.qualidade_index = 0
+        self.qualidade_cap = 0
+
         self.timer = Timer.get_instance()
         self.momento_requisicao = 0
+        
         self.taxa_bits = 0
-        self.qualidade_index = 0
+        self.throughput_mean = 0
+
+        self.current_buffer = 0
+        self.max_buffer = 0
 
     def handle_xml_request(self, msg):
         self.send_down(msg)
@@ -41,19 +48,17 @@ class R2AGrupo8(IR2A):
 
     def handle_segment_size_request(self, msg):
         self.momento_requisicao = self.timer.get_current_time()
-        print("#####>>>>>", self.taxa_bits)
-        if self.taxa_bits > 0 and self.qualidade_index < 19:
+
+        if self.taxa_bits > self.throughput_mean and self.qualidade_index < len(self.qi)-1:
             self.qualidade_index += 1 
-        elif self.taxa_bits == 0:
+        elif self.qualidade_index > 0:
             self.qualidade_index -= 1
 
-        print("### Playback_history:", self.whiteboard.get_playback_history(), sep="\n")
+        if self.whiteboard.get_playback_buffer_size():
+            if self.current_buffer == 0:
+                self.qualidade_index = 0
+                self.throughput_mean = 0
 
-        list = self.whiteboard.get_playback_history()
-        if len(list) > 0:
-            print(f'>>>>>>>>>>> {list[0][1]}')
-
-        # Hora de definir qual qualidade será escolhida
         msg.add_quality_id(self.qi[self.qualidade_index])
 
         self.send_down(msg)
@@ -61,11 +66,17 @@ class R2AGrupo8(IR2A):
     def handle_segment_size_response(self, msg):
         tamanho_segmento = msg.get_bit_length()
         self.taxa_bits = tamanho_segmento/(self.timer.get_current_time() - self.momento_requisicao)
-
+        if self.whiteboard.get_playback_buffer_size():
+            self.current_buffer = self.whiteboard.get_playback_buffer_size()[-1][1]
+        
+        if self.throughput_mean == 0:
+            self.throughput_mean = self.taxa_bits
+        else:
+            self.throughput_mean = (self.throughput_mean + self.taxa_bits)/2 # media de throughput
+        
         self.send_up(msg)
 
     def initialize(self):
-        # self.send_up(Message(MessageKind.SEGMENT_REQUEST, 'Olá Mundo'))
         pass
 
     def finalization(self):
