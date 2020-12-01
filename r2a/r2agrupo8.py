@@ -25,7 +25,6 @@ class R2AGrupo8(IR2A):
         IR2A.__init__(self, id)
         self.parsed_mpd = ''
         self.qi = []
-        self.qualidade_index = 0
         self.qualidade_cap = 0
 
         self.timer = Timer.get_instance()
@@ -49,17 +48,22 @@ class R2AGrupo8(IR2A):
     def handle_segment_size_request(self, msg):
         self.momento_requisicao = self.timer.get_current_time()
 
-        if self.taxa_bits > self.throughput_mean and self.qualidade_index < len(self.qi)-1:
-            self.qualidade_index += 1 
-        elif self.qualidade_index > 0:
-            self.qualidade_index -= 1
+        qualidade_selecionada = self.qi[0]
+        for i in range(len(self.qi)):
+            qualidade_selecionada = self.qi[i]
+            if self.taxa_bits < qualidade_selecionada:
+                if i == 0:
+                    qualidade_selecionada = self.qi[0]
+                else:
+                    qualidade_selecionada = self.qi[i-1]
+                break
 
         if self.whiteboard.get_playback_buffer_size():
             if self.current_buffer == 0:
-                self.qualidade_index = 0
-                self.throughput_mean = 0
+                qualidade_selecionada = self.qi[0]
+                # self.throughput_mean = 0
 
-        msg.add_quality_id(self.qi[self.qualidade_index])
+        msg.add_quality_id(qualidade_selecionada)
 
         self.send_down(msg)
 
