@@ -7,12 +7,9 @@ Victor Carvalho -   160147140
 @description: Projeto final de Redes de Computadores 2020/1
 
 An implementation of a dynamic R2A Algorithm.
-
-the quality list is obtained with the parameter of handle_xml_response() method and the choice
-is made inside of handle_segment_size_request(), before sending the message down.
-
-In this algorithm the quality choice should be dynamic according to the available bandwidth?
+This algorithm tries to deliver the best possible quality avoiding pauses the best it can...
 """
+
 import random
 from base.timer import Timer
 from player.parser import *
@@ -79,10 +76,13 @@ class R2AGrupo8(IR2A):
         pass
 
     def seleciona_qualidade(self):
+        pass        
+
+    def calcula_qualidade_maxima(self, throughput):
         qualidade_selecionada = self.qi[0]
         for i in range(len(self.qi)):
             qualidade_selecionada = self.qi[i]
-            if self.taxa_bits < qualidade_selecionada:
+            if throughput < qualidade_selecionada:
                 if i == 0:
                     qualidade_selecionada = self.qi[0]
                 else:

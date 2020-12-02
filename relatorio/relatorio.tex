@@ -1,0 +1,125 @@
+\documentclass[12pt]{article}
+
+\usepackage[brazil,american]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6.5in, 9.5in}]{geometry}
+
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{lipsum}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{listings}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codered}{rgb}{0.8,0,0}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\usepackage{inconsolata}
+\lstset{
+    language=python,
+    % backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codered},
+    basicstyle=\ttfamily\small,
+    % numberstyle=\footnotesize,
+    % numbers=left,
+    % backgroundcolor=\color{gray!10},
+    % frame=single,
+    tabsize=2,
+    rulecolor=\color{black!30},
+    title=\lstname,
+    escapeinside={\%*}{*)},
+    breaklines=true,
+    breakatwhitespace=true,
+    framextopmargin=2pt,
+    framexbottommargin=2pt,
+    inputencoding=utf8,
+    extendedchars=true,
+    showstringspaces=false,
+    literate={á}{{\'a}}1 {ã}{{\~a}}1 {é}{{\'e}}1 {Ó}{{\'O}}1 {Ã}{{\~A}}1 {í}{{\'i}}1 {ó}{{\'o}}1,
+}
+
+% \pagecolor[rgb]{0.1,0.1,0.1}
+% \color[rgb]{0.9,0.9,0.9}
+
+\begin{titlepage}
+    \title{
+        \includegraphics[width=4cm]{img/logo.jpg} \\ 
+        \large
+        Dep. Ciência da Computação -- Universidade de Brasília (UnB)\\
+        CIC0124 - Redes de Computadores, Turma A \\
+        \vfill 
+        \vfill
+        \LARGE
+        \textbf{Projeto Final\\
+        Cliente DASH}
+        \vfill
+    }
+
+    \author{
+        Kesley Kenny Vasques Guimarães, 18/0021231\\
+        Pedro Henrique de Brito Agnes, 18/0026305\\
+        Victor Alves de Carvalho, 16/0147140
+    }
+    
+    \affil{
+        \vfill
+        \vfill
+        \vfill
+        Professor \\
+        Dr. Marcos Fagundes Caetano
+    }
+
+    \date{Brasília\\Dezembro de 2020}
+
+\end{titlepage}
+
+\begin{document}
+\maketitle
+\newpage
+
+\selectlanguage{brazil}
+
+\section{Introdução}
+\lipsum[0]
+
+\lipsum[1]
+
+\lipsum[2]
+
+\lipsum[3]
+
+\lipsum[4]
+
+\lipsum[5]
+
+\newpage
+
+\section{Algoritmo ABR}
+\lipsum[1]
+
+\begin{lstlisting}
+# codigos aqui
+print("Hello world")
+\end{lstlisting}
+
+\section{Conclusões}
+\lipsum[3]
+
+\lipsum[5]
+
+\begin{thebibliography}{9}
+
+\bibitem{livroRC}
+\noindent James F. Kurose \& Keith W. Ross, 
+\textit{Redes de Computadores e a Internet - Uma nova Abordagem, 7a /8a Edição, Pearson Education / Makron Books.}
+
+\end{thebibliography}
+
+\end{document}
