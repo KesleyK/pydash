@@ -8,3 +8,11 @@ r2a/r2afdash.py
 __pycache__/
 *.py[cod]
 *$py.class
+
+#latex
+relatorio/*.aux
+relatorio/*.out
+relatorio/*.fdb_latex
+relatorio/*.fls
+relatorio/*.log
+relatorio/*.synctex.gz
