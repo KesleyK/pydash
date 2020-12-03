@@ -11,6 +11,7 @@ This algorithm tries to deliver the best possible quality avoiding pauses the be
 """
 
 import random
+import math
 from base.timer import Timer
 from player.parser import *
 from r2a.ir2a import IR2A
@@ -29,10 +30,9 @@ class R2AGrupo8(IR2A):
         self.momento_requisicao = 0
         
         self.taxa_bits = 0
-        self.throughput_mean = 0
+        self.historico_t = []
 
         self.current_buffer = 0
-        self.max_buffer = 0
 
     def handle_xml_request(self, msg):
         self.send_down(msg)
@@ -46,13 +46,13 @@ class R2AGrupo8(IR2A):
     def handle_segment_size_request(self, msg):
         self.momento_requisicao = self.timer.get_current_time()
 
-        qualidade_selecionada = self.seleciona_qualidade()
+        self.current_quality = self.seleciona_qualidade()
 
         if self.whiteboard.get_playback_buffer_size():
             if self.current_buffer == 0:
-                qualidade_selecionada = self.qi[0] # sempre que for detectado buffer vazio, pegamos a pior qualidade
+                self.current_quality = self.qi[0] # sempre que for detectado buffer vazio, pegamos a pior qualidade
 
-        msg.add_quality_id(qualidade_selecionada)
+        msg.add_quality_id(self.current_quality)
 
         self.send_down(msg)
 
@@ -62,11 +62,6 @@ class R2AGrupo8(IR2A):
         if self.whiteboard.get_playback_buffer_size():
             self.current_buffer = self.whiteboard.get_playback_buffer_size()[-1][1]
         
-        if self.throughput_mean == 0:
-            self.throughput_mean = self.taxa_bits
-        else:
-            self.throughput_mean = (self.throughput_mean + self.taxa_bits)/2 # media de throughput
-        
         self.send_up(msg)
 
     def initialize(self):
@@ -75,21 +70,35 @@ class R2AGrupo8(IR2A):
     def finalization(self):
         pass
 
+
+    ############ metodos auxiliares ############
+
     def seleciona_qualidade(self):
-        pass        
-
-    def calcula_qualidade_maxima(self, throughput):
-        qualidade_selecionada = self.qi[0]
-        for i in range(len(self.qi)):
-            qualidade_selecionada = self.qi[i]
-            if throughput < qualidade_selecionada:
-                if i == 0:
-                    qualidade_selecionada = self.qi[0]
-                else:
-                    qualidade_selecionada = self.qi[i-1]
-                break
-
+        qualidade_atual_suportada = self.calcula_qualidade_maxima(self.taxa_bits)
+        # qualidade_media_suportada = self.calcula_qualidade_maxima(self.avg_throughput())
+        qualidade_selecionada = self.qi[math.floor(qualidade_atual_suportada*self.limite_porcento_qualidade())]
         return qualidade_selecionada
 
-    def limite_qualidade(self):
-        pass
+    def avg_throughput(self):
+        return sum(self.historico_t)/self.historico_t.size()
+
+    def calcula_qualidade_maxima(self, throughput):
+        qualidade_index = 0
+        for i in range(len(self.qi)):
+            qualidade = self.qi[i]
+            if throughput < qualidade:
+                if i == 0:
+                    qualidade_index = 0
+                else:
+                    qualidade_index = i-1
+                break
+
+        return qualidade_index
+
+    def limite_porcento_qualidade(self):
+        stable_buffer = 50
+        limite = self.current_buffer/stable_buffer
+        if(limite > 1):
+            limite = 1
+
+        return limite
