@@ -87,17 +87,9 @@
 \selectlanguage{brazil}
 
 \section{Introdução}
-\lipsum[0]
+Para a implementação de um cliente DASH, existem diversos fatores a considerar. A largura de banda disponível aos usuários pode ser instável no geral, o que dificulta um serviço de \textit{streaming} de vídeo estável, ou seja, sem pausas ou de qualidade. Por isso, os serviços desse tipo atualmente disponibilizam diversas qualidades da imagem do vídeo diferentes, onde é atribuída a qualidade ideal, com o tempo necessário para baixar mais adequado à realidade da internet do usuário.
 
-\lipsum[1]
-
-\lipsum[2]
-
-\lipsum[3]
-
-\lipsum[4]
-
-\lipsum[5]
+Outro conceito utilizado é o de \textit{buffer}, que é um local onde serão armazenados os segmentos de vídeo baixados para a reprodução ao usuário posteriormente. De maneira geral, os segmentos a serem reproduzidos ao usuário vêm do \textit{buffer}, que é útil para as flutuações de banda, onde no caso de o usuário experienciar uma queda na qualidade da internet, naturalmente vai demorar mais para obter um segmento de uma qualidade melhor, o que pode diminuir o tamanho do \textit{buffer}, mas são usados métodos para evitar ao máximo que o tamanho do mesmo chegue em 0, que resultaria em uma pausa indesejada no vídeo. 
 
 \newpage
 
