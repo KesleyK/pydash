@@ -30,6 +30,8 @@ class R2AGrupo8(IR2A):
         self.momento_requisicao = 0
         
         self.taxa_bits = 0
+        self.menor_taxa = math.inf
+        self.maior_taxa = 0
         self.historico_t = []
 
         self.current_buffer = 0
@@ -45,12 +47,7 @@ class R2AGrupo8(IR2A):
 
     def handle_segment_size_request(self, msg):
         self.momento_requisicao = self.timer.get_current_time()
-
         self.current_quality = self.seleciona_qualidade()
-
-        if self.whiteboard.get_playback_buffer_size():
-            if self.current_buffer == 0:
-                self.current_quality = self.qi[0] # sempre que for detectado buffer vazio, pegamos a pior qualidade
 
         msg.add_quality_id(self.current_quality)
 
@@ -59,6 +56,11 @@ class R2AGrupo8(IR2A):
     def handle_segment_size_response(self, msg):
         tamanho_segmento = msg.get_bit_length()
         self.taxa_bits = tamanho_segmento/(self.timer.get_current_time() - self.momento_requisicao)
+        if self.taxa_bits < self.menor_taxa:
+            self.menor_taxa = self.taxa_bits
+        if self.taxa_bits > self.maior_taxa:
+            self.maior_taxa = self.taxa_bits
+
         if self.whiteboard.get_playback_buffer_size():
             self.current_buffer = self.whiteboard.get_playback_buffer_size()[-1][1]
         
@@ -75,12 +77,19 @@ class R2AGrupo8(IR2A):
 
     def seleciona_qualidade(self):
         qualidade_atual_suportada = self.calcula_qualidade_maxima(self.taxa_bits)
-        # qualidade_media_suportada = self.calcula_qualidade_maxima(self.avg_throughput())
-        qualidade_selecionada = self.qi[math.floor(qualidade_atual_suportada*self.limite_porcento_qualidade())]
-        return qualidade_selecionada
+        pior_caso = self.calcula_qualidade_maxima(self.menor_taxa)
+        # media = self.calcula_qualidade_maxima(self.avg_throughput())
+        # melhor_caso = self.calcula_qualidade_maxima(self.maior_taxa)
+        
+        qualidade_selecionada = math.floor(qualidade_atual_suportada * self.limite_porcento_qualidade(qualidade_atual_suportada))
+        if qualidade_selecionada >= len(self.qi):
+            qualidade_selecionada = len(self.qi)-1
+        return self.qi[qualidade_selecionada]
 
     def avg_throughput(self):
-        return sum(self.historico_t)/self.historico_t.size()
+        if len(self.historico_t) == 0:
+            return self.qi[0]
+        return sum(self.historico_t)/len(self.historico_t)
 
     def calcula_qualidade_maxima(self, throughput):
         qualidade_index = 0
@@ -95,10 +104,13 @@ class R2AGrupo8(IR2A):
 
         return qualidade_index
 
-    def limite_porcento_qualidade(self):
-        stable_buffer = 50
+    def limite_porcento_qualidade(self, qualidade):
+        stable_buffer = self.qi[qualidade]/self.menor_taxa
+        if stable_buffer < 10:
+            stable_buffer = 10
+
         limite = self.current_buffer/stable_buffer
-        if(limite > 1):
+        if limite > 1:
             limite = 1
 
         return limite
