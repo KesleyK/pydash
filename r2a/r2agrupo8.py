@@ -24,7 +24,6 @@ class R2AGrupo8(IR2A):
         self.parsed_mpd = ''
         self.qi = []
         self.current_quality = 0
-        self.qualidade_cap = 0
 
         self.timer = Timer.get_instance()
         self.momento_requisicao = 0
@@ -32,9 +31,10 @@ class R2AGrupo8(IR2A):
         self.taxa_bits = 0
         self.menor_taxa = math.inf
         self.maior_taxa = 0
-        self.historico_t = []
 
         self.current_buffer = 0
+
+        self.logger = None
 
     def handle_xml_request(self, msg):
         self.send_down(msg)
@@ -67,23 +67,27 @@ class R2AGrupo8(IR2A):
         self.send_up(msg)
 
     def initialize(self):
-        pass
+        self.logger = open("results/estatisticasAdicionais.log", "w")
+        self.logger.write("| Tempo\t| Buffer estável\t| Buffer atual\t| Menor throughtput\t| Qualidade Buscada\t|\n")
 
     def finalization(self):
-        pass
+        self.logger.close()
 
 
     ############ metodos auxiliares ############
 
     def seleciona_qualidade(self):
         qualidade_atual_suportada = self.calcula_qualidade_maxima(self.taxa_bits)
-        pior_caso = self.calcula_qualidade_maxima(self.menor_taxa)
+        # pior_caso = self.calcula_qualidade_maxima(self.menor_taxa)
         # media = self.calcula_qualidade_maxima(self.avg_throughput())
         # melhor_caso = self.calcula_qualidade_maxima(self.maior_taxa)
         
         qualidade_selecionada = math.floor(qualidade_atual_suportada * self.limite_porcento_qualidade(qualidade_atual_suportada))
         if qualidade_selecionada >= len(self.qi):
             qualidade_selecionada = len(self.qi)-1
+
+        
+
         return self.qi[qualidade_selecionada]
 
     def avg_throughput(self):
@@ -101,6 +105,8 @@ class R2AGrupo8(IR2A):
                 else:
                     qualidade_index = i-1
                 break
+            elif i == len(self.qi)-1:
+                qualidade_index = len(self.qi)-1
 
         return qualidade_index
 
@@ -108,6 +114,8 @@ class R2AGrupo8(IR2A):
         stable_buffer = self.qi[qualidade]/self.menor_taxa
         if stable_buffer < 10:
             stable_buffer = 10
+
+        self.logger.write(f"| {self.timer.get_current_time()}\t| {stable_buffer}\t| {self.current_buffer}\t| {self.menor_taxa}\t| {qualidade}\t|\n")
 
         limite = self.current_buffer/stable_buffer
         if limite > 1:
