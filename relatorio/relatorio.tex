@@ -122,8 +122,8 @@ Devido ao problema mostrado acima, foi definida uma forma de calcular um \textit
 # a explicar depois... (em desenvolvimento)
 def limite_porcento_qualidade(self, qualidade):
     stable_buffer = self.qi[qualidade]/self.menor_taxa
-    if stable_buffer < 10:
-        stable_buffer = 10
+    if stable_buffer < 1:
+        stable_buffer = 1
 
     limite = self.current_buffer/stable_buffer
     if limite > 1:
@@ -131,6 +131,8 @@ def limite_porcento_qualidade(self, qualidade):
 
     return limite
 \end{lstlisting}
+
+Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, pois utiliza como base a pior taxa de transferência já registrada, o que não será muito útil se a qualidade da rede começar boa no início do vídeo e cair depois.
 
 \section{Conclusões}
 \lipsum[3]
