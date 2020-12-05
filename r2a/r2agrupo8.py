@@ -35,6 +35,7 @@ class R2AGrupo8(IR2A):
         self.historico_t = []
 
         self.current_buffer = 0
+        self.quedas_consecutivas = 0
 
         self.logger = None
 
@@ -85,13 +86,15 @@ class R2AGrupo8(IR2A):
 
     def seleciona_qualidade(self):
         qualidade_atual_suportada = self.calcula_qualidade_maxima(self.taxa_bits)
-        # pior_caso = self.calcula_qualidade_maxima(self.menor_taxa)
-        # media = self.calcula_qualidade_maxima(self.avg_throughput())
-        # melhor_caso = self.calcula_qualidade_maxima(self.maior_taxa)
         
         qualidade_selecionada = math.floor(qualidade_atual_suportada * self.limite_porcento_qualidade(qualidade_atual_suportada) * self.estabilidade_rede())
         if qualidade_selecionada >= len(self.qi):
             qualidade_selecionada = len(self.qi)-1
+
+        if qualidade_selecionada == 0 and self.current_buffer > 0:
+            qualidade_selecionada = self.suavisa_queda_qualidade(qualidade_selecionada)
+        else:
+            self.quedas_consecutivas = 0
 
         return self.qi[qualidade_selecionada]
 
@@ -122,6 +125,30 @@ class R2AGrupo8(IR2A):
 
         return limite
 
+    def suavisa_queda_qualidade(self, qualidade):
+        if len(self.whiteboard.get_playback_pauses()) != 0:
+            return qualidade
+
+        self.quedas_consecutivas += 1
+        qualidade_corrigida = 0
+
+        qualidade_atual = 0
+        for q in self.qi:
+            if q == self.current_quality:
+                break
+            qualidade_atual += 1
+
+        media = self.avg_qi()
+
+        if self.quedas_consecutivas == 1:
+            qualidade_corrigida = (qualidade_atual + media)/2
+        elif self.quedas_consecutivas == 2:
+            qualidade_corrigida = media
+        elif self.quedas_consecutivas == 3:
+            qualidade_corrigida = media/2
+
+        return math.floor(qualidade_corrigida)
+
     def estabilidade_rede(self):
         grau_escalabilidade = 1
         agora = self.timer.get_current_time()
@@ -139,6 +166,9 @@ class R2AGrupo8(IR2A):
 
     def avg_qi(self):
         media = 0
+        if len(self.whiteboard.get_playback_qi()) == 0:
+            return media
+
         for q in self.whiteboard.get_playback_qi():
             media += q[1]
         

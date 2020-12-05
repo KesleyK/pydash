@@ -137,11 +137,10 @@ Usando apenas o código apresentado acima é uma forma de se obter uma qualidade
 Devido ao problema mostrado acima, foi definida uma forma de calcular um \textit{buffer estável}, que representará o tamanho do \textit{buffer} mínimo para que não existam pausas no vídeo caso a qualidade da rede do usuário caia um tanto considerável. De forma geral, é o tamanho que vai suprir o tempo médio necessário para baixar um segmento na qualidade atual com a pior taxa de internet já registrada durante a execução.
 
 \begin{lstlisting}
-# a explicar depois... (em desenvolvimento)
+# limitar a qualidade escolhida com base no tamanho do buffer
 def limite_porcento_qualidade(self, qualidade):
     stable_buffer = self.qi[qualidade]/self.menor_taxa
-    if stable_buffer < 1:
-        stable_buffer = 1
+    stable_buffer += 5 # garantia de seguranca
 
     limite = self.current_buffer/stable_buffer
     if limite > 1:
@@ -150,16 +149,54 @@ def limite_porcento_qualidade(self, qualidade):
     return limite
 \end{lstlisting}
 
-Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, pois utiliza como base a pior taxa de transferência já registrada, o que não será muito útil se a qualidade da rede começar boa no início do vídeo e cair depois. Para isso\dots
+Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, pois utiliza como base a pior taxa de transferência já registrada, o que não será muito útil se a qualidade da rede começar boa no início do vídeo e cair depois. Para isso, foi implementada uma função que vai priorizar o carregamento do \textit{buffer} ao início da reprodução do vídeo, limitando a qualidade proporcionalmente ao tempo passado, o que pode evitar pausas em alterações de taxa de transferência para piores, mas não é tão otimizado a ponto de evitar por completo quando a banda sai do mais alto possível da plataforma \textit{pydash} para o mais baixo. 
+
+Por fim, também foi criado um método para controlar as quedas de qualidade de forma a não cair de uma vez para zero, que prejudica e experiência do usuário e, portanto, vai diminuir de pouco a pouco até chegar na pior qualidade. A seguir será mostrado o método que basicamente conta as quedas consecutivas de \textit{throughput} e corrige a qualidade com base nela para valores médios entre a média geral, 0 e a qualidade atual.
+
+\begin{lstlisting}
+def suavisa_queda_qualidade(self, qualidade):
+    if len(self.whiteboard.get_playback_pauses()) != 0:
+        return qualidade
+
+    self.quedas_consecutivas += 1
+    qualidade_corrigida = 0
+
+    qualidade_atual = 0
+    for q in self.qi:
+        if q == self.current_quality:
+            break
+        qualidade_atual += 1
+
+    media = self.avg_qi()
+
+    if self.quedas_consecutivas == 1:
+        qualidade_corrigida = (qualidade_atual + media)/2
+    elif self.quedas_consecutivas == 2:
+        qualidade_corrigida = media
+    elif self.quedas_consecutivas == 3:
+        qualidade_corrigida = media/2
+
+    return math.floor(qualidade_corrigida)
+\end{lstlisting}
+
+Com todas essas especificações, obtemos o ABR final que é mais otimizado em relação às pausas, onde serão raras em casos extremos, porém podendo ser bem longas se houver uma sequência de \texttt{LH} no início do \texttt{traffic\_shaping\_profile\_sequence}. Tirando este caso, o algoritmo roda de forma bem constante, entregando a melhor qualidade possível com a banda, porém de forma \textit{segura}, para evitar as pausas ao máximo, não priorizando muito a qualidade.
 
 \section{Conclusões}
-\lipsum[3]
+O trabalho ajudou-nos a entender melhor sobre o funcionamento dos serviços de \textit{streaming}, que dominam a internet na atualidade, assim como mostrando diversas dificuldades na implementação. Durante o desenvolvimento do projeto, foi necessário escolher entre priorizar a qualidade ou as pausas, onde optamos pelas pausas, que é o que evitamos o máximo possível, enquanto a qualidade não foi totalmente esquecida e ainda tentamos entregar uma ótima qualidade ao usuário, porém sempre priorizando as pausas, que se relaciona diretamente com o \textit{buffer}.
 
 \begin{thebibliography}{9}
 
 \bibitem{livroRC}
 \noindent James F. Kurose \& Keith W. Ross, 
 \textit{Redes de Computadores e a Internet - Uma nova Abordagem, 7a /8a Edição, Pearson Education / Makron Books.}
+
+\bibitem{video}
+\noindent Streaming Media Editorial Staff.
+\textit{Why Adaptive Bitrate Streaming?}, 2016
+
+\bibitem{artigo1}
+\noindent Iraj Sodagar.
+\textit{The MPEG-DASH Standard for Multimedia Streaming Over the Internet}
 
 \end{thebibliography}
 
