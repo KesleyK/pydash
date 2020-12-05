@@ -24,6 +24,7 @@ class R2AGrupo8(IR2A):
         self.parsed_mpd = ''
         self.qi = []
         self.current_quality = 0
+        self.segmentos_baixados = 0
 
         self.timer = Timer.get_instance()
         self.momento_requisicao = 0
@@ -55,7 +56,9 @@ class R2AGrupo8(IR2A):
         self.send_down(msg)
 
     def handle_segment_size_response(self, msg):
+        self.segmentos_baixados += 1
         tamanho_segmento = msg.get_bit_length()
+
         self.taxa_bits = tamanho_segmento/(self.timer.get_current_time() - self.momento_requisicao)
         if self.taxa_bits < self.menor_taxa:
             self.menor_taxa = self.taxa_bits
@@ -74,6 +77,8 @@ class R2AGrupo8(IR2A):
 
     def finalization(self):
         self.logger.close()
+        print("avg throughput:", self.avg_throughput())
+        print("avg qi:", self.avg_qi())
 
 
     ############ metodos auxiliares ############
@@ -84,18 +89,11 @@ class R2AGrupo8(IR2A):
         # media = self.calcula_qualidade_maxima(self.avg_throughput())
         # melhor_caso = self.calcula_qualidade_maxima(self.maior_taxa)
         
-        qualidade_selecionada = math.floor(qualidade_atual_suportada * self.limite_porcento_qualidade(qualidade_atual_suportada))
+        qualidade_selecionada = math.floor(qualidade_atual_suportada * self.limite_porcento_qualidade(qualidade_atual_suportada) * self.estabilidade_rede())
         if qualidade_selecionada >= len(self.qi):
             qualidade_selecionada = len(self.qi)-1
 
-        
-
         return self.qi[qualidade_selecionada]
-
-    def avg_throughput(self):
-        if len(self.historico_t) == 0:
-            return self.qi[0]
-        return sum(self.historico_t)/len(self.historico_t)
 
     def calcula_qualidade_maxima(self, throughput):
         qualidade_index = 0
@@ -114,8 +112,7 @@ class R2AGrupo8(IR2A):
 
     def limite_porcento_qualidade(self, qualidade):
         stable_buffer = self.qi[qualidade]/self.menor_taxa
-        if stable_buffer < 1:
-            stable_buffer = 1
+        stable_buffer += 5
 
         self.logger.write(f"Tempo: {self.timer.get_current_time()}\nBuffer Estável: {stable_buffer}\nBuffer atual: {self.current_buffer}\nMenor taxa: {self.menor_taxa}\nQualidade selecionada: {qualidade}\n\n")
 
@@ -126,6 +123,23 @@ class R2AGrupo8(IR2A):
         return limite
 
     def estabilidade_rede(self):
+        grau_escalabilidade = 1
         agora = self.timer.get_current_time()
+        estabilidade = (agora**2/grau_escalabilidade)/grau_escalabilidade
 
+        if estabilidade > 1:
+            estabilidade = 1
+
+        return estabilidade
+
+    def avg_throughput(self):
+        if len(self.historico_t) == 0:
+            return self.qi[0]
+        return sum(self.historico_t)/len(self.historico_t)
+
+    def avg_qi(self):
+        media = 0
+        for q in self.whiteboard.get_playback_qi():
+            media += q[1]
         
+        return media/len(self.whiteboard.get_playback_qi())
