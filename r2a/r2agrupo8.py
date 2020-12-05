@@ -96,8 +96,6 @@ class R2AGrupo8(IR2A):
         else:
             self.quedas_consecutivas = 0
 
-        print(self.quedas_consecutivas)
-
         return self.qi[qualidade_selecionada]
 
     def calcula_qualidade_maxima(self, throughput):
