@@ -116,7 +116,7 @@ def calcula_qualidade_maxima(self, throughput):
 
 Usando apenas o código apresentado acima é uma forma de se obter uma qualidade ideal para a banda disponível, mas existem alguns problemas que serão listados a seguir. Só é possível calcular a velocidade da internet após a requisição, durante a resposta, o que tem péssimas consequências em redes instáveis, pois se a banda piora, a qualidade selecionada do vídeo ainda continua a mesma e isso quer dizer que vai demorar mais tempo para baixar, o que trará consequências no \textit{buffer}, que será utilizado para que não hajam pausas no vídeo. Aí chegamos no segundo problema da abordagem, que o buffer nunca ficará com um tamanho estável, já que estamos sempre pegando a maior qualidade suportada pelo \textit{throughput}, o que fará com que ele nunca seja suficiente para as quedas de qualidade de internet.
 
-Devido ao problema mostrado acima, foi definida uma forma de calcular um \textit{buffer estável}, que representará o tamanho do \textit{buffer} mínimo para que não existam pausas no vídeo caso a qualidade da rede do usuário caia um tanto considerável, ou seja, é o tamanho que vai suprir o tempo médio necessário para baixar um segmento na qualidade atual com a pior taxa de internet já registrada durante a execução.
+Devido ao problema mostrado acima, foi definida uma forma de calcular um \textit{buffer estável}, que representará o tamanho do \textit{buffer} mínimo para que não existam pausas no vídeo caso a qualidade da rede do usuário caia um tanto considerável. De forma geral, é o tamanho que vai suprir o tempo médio necessário para baixar um segmento na qualidade atual com a pior taxa de internet já registrada durante a execução.
 
 \begin{lstlisting}
 # a explicar depois... (em desenvolvimento)

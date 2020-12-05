@@ -31,6 +31,7 @@ class R2AGrupo8(IR2A):
         self.taxa_bits = 0
         self.menor_taxa = math.inf
         self.maior_taxa = 0
+        self.historico_t = []
 
         self.current_buffer = 0
 
@@ -61,6 +62,8 @@ class R2AGrupo8(IR2A):
         if self.taxa_bits > self.maior_taxa:
             self.maior_taxa = self.taxa_bits
 
+        self.historico_t.append(self.taxa_bits)
+
         if self.whiteboard.get_playback_buffer_size():
             self.current_buffer = self.whiteboard.get_playback_buffer_size()[-1][1]
         
@@ -68,7 +71,6 @@ class R2AGrupo8(IR2A):
 
     def initialize(self):
         self.logger = open("results/estatisticasAdicionais.log", "w")
-        self.logger.write("| Tempo\t| Buffer estável\t| Buffer atual\t| Menor throughtput\t| Qualidade Buscada\t|\n")
 
     def finalization(self):
         self.logger.close()
@@ -112,13 +114,18 @@ class R2AGrupo8(IR2A):
 
     def limite_porcento_qualidade(self, qualidade):
         stable_buffer = self.qi[qualidade]/self.menor_taxa
-        if stable_buffer < 10:
-            stable_buffer = 10
+        if stable_buffer < 1:
+            stable_buffer = 1
 
-        self.logger.write(f"| {self.timer.get_current_time()}\t| {stable_buffer}\t| {self.current_buffer}\t| {self.menor_taxa}\t| {qualidade}\t|\n")
+        self.logger.write(f"Tempo: {self.timer.get_current_time()}\nBuffer Estável: {stable_buffer}\nBuffer atual: {self.current_buffer}\nMenor taxa: {self.menor_taxa}\nQualidade selecionada: {qualidade}\n\n")
 
         limite = self.current_buffer/stable_buffer
         if limite > 1:
             limite = 1
 
         return limite
+
+    def estabilidade_rede(self):
+        agora = self.timer.get_current_time()
+
+        
