@@ -89,7 +89,25 @@
 \section{Introdução}
 Para a implementação de um cliente DASH, existem diversos fatores a considerar. A largura de banda disponível aos usuários pode ser instável no geral, o que dificulta um serviço de \textit{streaming} de vídeo estável, ou seja, sem pausas ou de qualidade. Por isso, os serviços desse tipo atualmente disponibilizam diversas qualidades da imagem do vídeo diferentes, onde é atribuída a qualidade ideal, com o tempo necessário para baixar mais adequado à realidade da internet do usuário.
 
-Outro conceito utilizado é o de \textit{buffer}, que é um local onde serão armazenados os segmentos de vídeo baixados para a reprodução ao usuário posteriormente. De maneira geral, os segmentos a serem reproduzidos ao usuário vêm do \textit{buffer}, que é útil para as flutuações de banda, onde no caso de o usuário experienciar uma queda na qualidade da internet, naturalmente vai demorar mais para obter um segmento de uma qualidade melhor, o que pode diminuir o tamanho do \textit{buffer}, mas são usados métodos para evitar ao máximo que o tamanho do mesmo chegue em 0, que resultaria em uma pausa indesejada no vídeo. Para o controle de todos os fatores variáveis incluídos em um cliente DASH, são usados Algoritmos de Adaptação de Taxa de Bits (ABR), que consistem em algoritmos que devem avaliar os recursos e estatísticas disponíveis de forma a buscar a melhor experiência ao usuário que está usando o serviço de vídeo.
+
+Outro conceito utilizado é o de \textit{buffer}, que é um local onde serão armazenados os segmentos de vídeo baixados para a reprodução ao usuário posteriormente. De maneira geral, os segmentos a serem reproduzidos ao usuário vêm do \textit{buffer}, que é útil para as flutuações de banda, onde no caso de o usuário experienciar uma queda na qualidade da internet, naturalmente vai demorar mais para obter um segmento de uma qualidade melhor, o que pode diminuir o tamanho do \textit{buffer}, mas são usados métodos para evitar ao máximo que o tamanho do mesmo chegue em 0, que resultaria em uma pausa indesejada no vídeo. Para o controle de todos os fatores variáveis incluídos em um cliente DASH, são usados Algoritmos de Adaptação de Taxa de Bits (ABR).
+
+\subsection{Como são implementados os algoritmos ABR?}
+Algoritmos ABR são implementados por meio de um balanceador disposto a equilibrar o desempenho da internet do usuário, bem como, a qualidade de reprodução de um provedor de serviços de streaming. O balanceador consiste em algoritmos que devem avaliar os recursos e estatísticas disponíveis de forma a buscar a melhor experiência ao usuário que está usando o serviço de vídeo. Além disso, deve lidar com diferentes tipos de conexão de internet, diferentes tipos de dispositivos de streaming e cálculos de estimativa da bandalarga utilizada.
+
+\subsection{Design ABR}
+De modo geral, algoritmos ABR devem ser capazes de atender as seguintes especificações:
+\begin{itemize}
+    \item \textbf{Maximizar eficiência:} aplicar a melhor taxa de bits durante a exibição de players de vídeo.
+    \item \textbf{Minimizar rebuffering:} fazer o possível para que a bandalarga não seja inferior a necessária para a renderização do vídeo.
+    \item \textbf{Estabilizar a qualidade do vídeo:} balancear, de modo a não gerar oscilações relacionadas a qualidade do vídeo.
+    \item \textbf{Qualidades justas de transmissão:} não pode haver desperdício dos recursos disponíveis. Deve tirar o melhor proveito que a conexão fornece ao usuário.
+\end{itemize}
+
+\subsection{Algoritmo aplicado}
+Para o projeto, o algoritmo utilizado foi baseado em conceitos obtidos por meio de estudos de algoritmos ABR distintos. Entretanto, nenhum algoritmo específico foi utilizado. A abordagem principal foi seguir todos conceitos de design ABR na tentativa de obter os melhores resultados.
+
+
 
 \newpage
 
