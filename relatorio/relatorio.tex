@@ -149,7 +149,13 @@ def limite_porcento_qualidade(self, qualidade):
     return limite
 \end{lstlisting}
 
-Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, pois utiliza como base a pior taxa de transferência já registrada, o que não será muito útil se a qualidade da rede começar boa no início do vídeo e cair depois. Para isso, foi implementada uma função que vai priorizar o carregamento do \textit{buffer} ao início da reprodução do vídeo, limitando a qualidade proporcionalmente ao tempo passado seguindo uma função logarítmica. O funcionamento da mesma é de forma que a qualidade do vídeo vai seguir o comportamento da função definida no gráfico até atingir a qualidade suportada máxima pelo \textit{throughput}, assim garantindo um tempo bom para o carregamento inicial do \textit{buffer}.
+Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, pois utiliza como base a pior taxa de transferência já registrada, o que não será muito útil se a qualidade da rede começar boa no início do vídeo e cair depois. Para isso, foi implementada uma função que vai priorizar o carregamento do \textit{buffer} ao início da reprodução do vídeo, limitando a qualidade proporcionalmente ao tempo passado seguindo uma função logarítmica. O funcionamento da mesma é de forma que a qualidade do vídeo vai seguir o comportamento da função definida no gráfico até atingir a qualidade suportada máxima pelo \textit{throughput}, assim garantindo um tempo bom para o carregamento inicial do \textit{buffer}. Podemos ver o comportamento a seguir:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.75\textwidth]{img/qi_L.png}
+    \caption{Sequência L com a função logarítmica}
+\end{figure}
 
 Por fim, também foi criado um método para controlar as quedas de qualidade de forma a não cair de uma vez para zero, que prejudica e experiência do usuário e, portanto, vai diminuir de pouco a pouco até chegar na pior qualidade. A seguir será mostrado o método que basicamente conta as quedas consecutivas de \textit{throughput} e corrige a qualidade com base nela para valores médios entre a média geral, 0 e a qualidade atual.
 
