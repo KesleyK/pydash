@@ -93,7 +93,7 @@ Para a implementação de um cliente DASH, existem diversos fatores a considerar
 Outro conceito utilizado é o de \textit{buffer}, que é um local onde serão armazenados os segmentos de vídeo baixados para a reprodução ao usuário posteriormente. De maneira geral, os segmentos a serem reproduzidos ao usuário vêm do \textit{buffer}, que é útil para as flutuações de banda, onde no caso de o usuário experienciar uma queda na qualidade da internet, naturalmente vai demorar mais para obter um segmento de uma qualidade melhor, o que pode diminuir o tamanho do \textit{buffer}, mas são usados métodos para evitar ao máximo que o tamanho do mesmo chegue em 0, que resultaria em uma pausa indesejada no vídeo. Para o controle de todos os fatores variáveis incluídos em um cliente DASH, são usados Algoritmos de Adaptação de Taxa de Bits (ABR).
 
 \subsection{Como são implementados os algoritmos ABR?}
-Algoritmos ABR são implementados por meio de um balanceador disposto a equilibrar o desempenho da internet do usuário, bem como, a qualidade de reprodução de um provedor de serviços de streaming. O balanceador consiste em algoritmos que devem avaliar os recursos e estatísticas disponíveis de forma a buscar a melhor experiência ao usuário que está usando o serviço de vídeo. Além disso, deve lidar com diferentes tipos de conexão de internet, diferentes tipos de dispositivos de streaming e cálculos de estimativa da bandalarga utilizada.
+Algoritmos ABR são implementados por meio de um balanceador disposto a equilibrar o desempenho da internet do usuário, bem como, a qualidade de reprodução de um provedor de serviços de streaming. O balanceador consiste em algoritmos que devem avaliar os recursos e estatísticas disponíveis de forma a buscar a melhor experiência ao usuário que está usando o serviço de vídeo. Além disso, deve lidar com diferentes tipos de conexão de internet, diferentes tipos de dispositivos de streaming e cálculos de estimativa da banda larga utilizada.
 
 \subsection{Design ABR}
 De modo geral, algoritmos ABR devem ser capazes de atender as seguintes especificações:
@@ -149,7 +149,7 @@ def limite_porcento_qualidade(self, qualidade):
     return limite
 \end{lstlisting}
 
-Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, pois utiliza como base a pior taxa de transferência já registrada, o que não será muito útil se a qualidade da rede começar boa no início do vídeo e cair depois. Para isso, foi implementada uma função que vai priorizar o carregamento do \textit{buffer} ao início da reprodução do vídeo, limitando a qualidade proporcionalmente ao tempo passado seguindo uma função logarítmica. O funcionamento da mesma é de forma que a qualidade do vídeo vai seguir o comportamento da função definida no gráfico até atingir a qualidade suportada máxima pelo \textit{throughput}, assim garantindo um tempo bom para o carregamento inicial do \textit{buffer}. Podemos ver o comportamento a seguir:
+Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, pois utiliza como base a pior taxa de transferência já registrada, o que não será muito útil se a qualidade da rede começar boa no início do vídeo e cair depois. Para isso, foi implementada uma função que vai priorizar o carregamento do \textit{buffer} ao início da reprodução do vídeo, limitando a qualidade proporcionalmente ao tempo passado seguindo uma função logarítmica. O funcionamento da mesma é de forma que a qualidade do vídeo vai seguir o comportamento da função definida no gráfico até atingir a qualidade suportada máxima pelo \textit{throughput}, assim garantindo um tempo bom para o carregamento inicial do \textit{buffer}.Podemos ver o comportamento a seguir:
 
 \begin{figure}[H]
     \centering
@@ -157,7 +157,7 @@ Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, p
     \caption{Sequência L com a função logarítmica}
 \end{figure}
 
-Por fim, também foi criado um método para controlar as quedas de qualidade de forma a não cair de uma vez para zero, que prejudica e experiência do usuário e, portanto, vai diminuir de pouco a pouco até chegar na pior qualidade. A seguir será mostrado o método que basicamente conta as quedas consecutivas de \textit{throughput} e corrige a qualidade com base nela para valores médios entre a média geral, 0 e a qualidade atual.
+Por fim, também foi criado um método para controlar as quedas de qualidade de forma a não cair de uma vez para zero, que prejudica a experiência do usuário e, portanto, vai diminuir de pouco a pouco até chegar na pior qualidade. A seguir será mostrado o método que basicamente conta as quedas consecutivas de \textit{throughput} e corrige a qualidade com base nela para valores médios entre a média geral, 0 e a qualidade atual.
 
 \begin{lstlisting}
 # impede a qualidade de cair imediatamente com condicoes especificas
@@ -183,10 +183,10 @@ def suavisa_queda_qualidade(self, qualidade):
     return math.floor(qualidade_corrigida)
 \end{lstlisting}
 
-Com todas essas especificações, obtemos o nosso ABR final é quase igualmente otimizado em relação às pausas e à qualidade. Além disso, o algoritmo roda de forma bem constante, entregando a melhor qualidade possível com a banda, porém de forma \textit{segura}, para evitar as pausas ao máximo, balanceando entre os dois fatores.
+Com todas essas especificações, obtemos o nosso ABR final que é quase igualmente otimizado em relação às pausas e à qualidade. Além disso, o algoritmo roda de forma bem constante, entregando a melhor qualidade possível com a banda, porém de forma \textit{segura}, para evitar as pausas ao máximo, balanceando entre os dois fatores.
 
 \section{Conclusões}
-O trabalho ajudou-nos a entender melhor sobre o funcionamento dos serviços de \textit{streaming}, que dominam a internet na atualidade, assim como mostrando diversas dificuldades na implementação. Durante o desenvolvimento do projeto, foi necessário escolher entre priorizar a qualidade ou as pausas, onde foi feito o possível para atender aos dois.
+O trabalho ajudou-nos a entender melhor sobre o funcionamento dos serviços de \textit{streaming}, que dominam a internet na atualidade, assim como mostrando diversas dificuldades na implementação. Durante o desenvolvimento do projeto, foi necessário escolher entre priorizar a qualidade ou as pausas, onde foi feito o possível para atender aos dois. No processo de implementação do algoritmo ABR, passamos por algumas atualizações buscando maximizar a performance do algoritmo, tendo em vista que nas primeiras versões, tivemos uma taxa maior de pausa e maiores mudanças na qualidade do video. Ao adotarmos novas ideias, como uso de funções logaritmicas, tivemos uma certa melhora ao reduzirmos o tempo que a execução do programa pausou a reprodução e uma menor instabilidade na qualidade do video. Por reproduzirmos o comportamento de uma função \textit{log}, o algoritmo busca controlar gradativamente a qualidade, como mostrado no gráfico da Figura 1, em função da banda o quanto antes para manter uma constância maior evitando ao máximo uma possível pausa. Ao estudarmos sobre cliente DASH e algoritmos ABR, vimos que esse campo de pesquisa é bem desafiador por sempre tratar de cenários diversos e voláteis e mesmo assim conseguir trazer um resultado satisfatório dentro do possível para o usuário, mesmo que com conexões mais lentas.
 
 \begin{thebibliography}{9}
 
