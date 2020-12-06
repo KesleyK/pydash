@@ -154,10 +154,8 @@ Apesar de todas as verificações, a estratégia ainda se mostra insuficiente, p
 Por fim, também foi criado um método para controlar as quedas de qualidade de forma a não cair de uma vez para zero, que prejudica e experiência do usuário e, portanto, vai diminuir de pouco a pouco até chegar na pior qualidade. A seguir será mostrado o método que basicamente conta as quedas consecutivas de \textit{throughput} e corrige a qualidade com base nela para valores médios entre a média geral, 0 e a qualidade atual.
 
 \begin{lstlisting}
+# impede a qualidade de cair imediatamente com condicoes especificas
 def suavisa_queda_qualidade(self, qualidade):
-    if len(self.whiteboard.get_playback_pauses()) != 0:
-        return qualidade
-
     self.quedas_consecutivas += 1
     qualidade_corrigida = 0
 

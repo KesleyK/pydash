@@ -86,15 +86,19 @@ class R2AGrupo8(IR2A):
 
     def seleciona_qualidade(self):
         qualidade_atual_suportada = self.calcula_qualidade_maxima(self.taxa_bits)
+
+        self.logger.write(f"Tempo: {self.timer.get_current_time()}\nBuffer atual: {self.current_buffer}\n")
         
         qualidade_selecionada = math.floor(qualidade_atual_suportada * self.limite_porcento_qualidade(qualidade_atual_suportada) * self.estabilidade_rede())
         if qualidade_selecionada >= len(self.qi):
             qualidade_selecionada = len(self.qi)-1
 
-        if qualidade_selecionada == 0 and self.current_buffer > 0:
+        if qualidade_selecionada == 0 and self.current_buffer > 5:
             qualidade_selecionada = self.suavisa_queda_qualidade(qualidade_selecionada)
         else:
             self.quedas_consecutivas = 0
+
+        self.logger.write(f"Qualidade selecionada: {qualidade_selecionada}\n\n")
 
         return self.qi[qualidade_selecionada]
 
@@ -117,7 +121,7 @@ class R2AGrupo8(IR2A):
         stable_buffer = self.qi[qualidade]/self.menor_taxa
         stable_buffer += 5
 
-        self.logger.write(f"Tempo: {self.timer.get_current_time()}\nBuffer Estável: {stable_buffer}\nBuffer atual: {self.current_buffer}\nMenor taxa: {self.menor_taxa}\nQualidade selecionada: {qualidade}\n\n")
+        self.logger.write(f"Buffer Estável: {stable_buffer}\nMenor taxa: {self.menor_taxa}\nQualidade proposta: {qualidade}\n")
 
         limite = self.current_buffer/stable_buffer
         if limite > 1:
@@ -126,8 +130,8 @@ class R2AGrupo8(IR2A):
         return limite
 
     def suavisa_queda_qualidade(self, qualidade):
-        if len(self.whiteboard.get_playback_pauses()) != 0:
-            return qualidade
+        self.logger.write("Suavisador=>\n")
+        self.logger.write(f"Qualidade anterior: {qualidade}\n")
 
         self.quedas_consecutivas += 1
         qualidade_corrigida = 0
@@ -146,6 +150,8 @@ class R2AGrupo8(IR2A):
             qualidade_corrigida = media
         elif self.quedas_consecutivas == 3:
             qualidade_corrigida = media/2
+
+        self.logger.write(f"Qualidade Corrigida: {qualidade_corrigida}\n")
 
         return math.floor(qualidade_corrigida)
 
