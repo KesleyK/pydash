@@ -150,12 +150,14 @@ class R2AGrupo8(IR2A):
         return math.floor(qualidade_corrigida)
 
     def estabilidade_rede(self):
-        grau_escalabilidade = 1
+        grau_escalabilidade = 3
         agora = self.timer.get_current_time()
-        estabilidade = (agora**2/grau_escalabilidade)/grau_escalabilidade
+        estabilidade = (len(self.qi)/grau_escalabilidade * math.log(agora, 10) + 10)/len(self.qi)
 
         if estabilidade > 1:
             estabilidade = 1
+        elif estabilidade < 0:
+            estabilidade = 0
 
         return estabilidade
 
